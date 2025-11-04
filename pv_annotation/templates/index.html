@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Priority Vehicle Annotation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    :root{
+      --bg:#0b1020; --text:#eaf0ff; --muted:#a6b2cc; --panel:#ffffff;
+      --accent:#6c5ce7; --accent-2:#8b5cf6; --accent-3:#22c55e; --border:#e7e9f3; --shadow:0 18px 48px rgba(15,23,42,.18);
+    }
+    body { font-family:'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; color:var(--text);
+      background: radial-gradient(1400px 800px at -10% -20%, rgba(139,92,246,.22), transparent 60%),
+                  radial-gradient(1200px 700px at 110% -10%, rgba(108,92,231,.22), transparent 62%),
+                  linear-gradient(160deg, #1f2847 0%, #1a2140 18%, #171d38 100%);
+    }
+    .header { position:sticky; top:0; z-index:5; background:linear-gradient(180deg, rgba(23,29,56,.86), rgba(23,29,56,.66)); border-bottom:1px solid rgba(255,255,255,.06); backdrop-filter: blur(6px); }
+    .wrap { max-width:1200px; margin:0 auto; padding:18px 22px; }
+    .title { display:flex; gap:12px; align-items:center; justify-content:center; text-align:center; }
+    .badge { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow:0 10px 24px rgba(139,92,246,.35); }
+    .badge span { font-size:18px; font-weight:800; color:#fff; }
+    h1 { margin:0; font-size:24px; letter-spacing:.3px; }
+    .subtitle { margin:2px 0 0; color:var(--muted); font-size:13px; }
+
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start; padding:24px 22px; }
+    .panel { background:var(--panel); color:#0f172a; border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); }
+    .panel .inner { padding:18px; }
+    .panel h2 { margin:0 0 12px; font-size:16px; color:#111827; }
+    .muted { color:#64748b; }
+
+    :root { --box-h: 178px; }
+    .drop { border:2px dashed #cdd3e1; border-radius:14px; background:#f8faff; padding:28px; text-align:center; color:#6b7280; min-height:var(--box-h); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .drop small { display:block; margin-top:10px; color:#94a3b8; font-size:13px; }
+    input[type=file] { display:block; margin:12px auto; }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 16px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; font-weight:800; border-radius:10px; border:none; cursor:pointer; box-shadow:0 10px 28px rgba(108,92,231,.35); }
+    .hint { background:#ecfdf5; color:#065f46; border:1px solid #bbf7d0; border-radius:12px; padding:12px; font-size:13px; }
+
+    .centered-actions { display:flex; flex-direction:column; align-items:center; gap:12px; }
+
+    .resultBox { min-height:var(--box-h); display:flex; align-items:center; justify-content:center; background:#fafbff; border:1px dashed #e5e7eb; border-radius:12px; padding:10px; }
+
+    .section { border-top:1px dashed #e5e7eb; padding:16px 0 0; margin-top:16px; }
+    .placeholder { border:1px dashed #e5e7eb; border-radius:12px; background:#fafbff; color:#64748b; padding:18px; text-align:center; }
+    .media { width:100%; height:100%; max-height:var(--box-h - 20px); border-radius:12px; border:1px solid #e5e7eb; background:#0e1629; object-fit:contain; }
+    .fileRow { display:flex; justify-content:center; }
+    img.media { object-fit:contain; }
+    video.media { outline:none; }
+
+    @media (max-width: 980px){ .grid { grid-template-columns: 1fr; } }
+  </style>
+  <script>
+    function onFileChange(input){
+      const file = input.files && input.files[0];
+      const label = document.getElementById('selLabel');
+      const prev = document.getElementById('uploadPreview');
+      if (!file) {
+        if (label) label.textContent = 'No file selected';
+        prev.innerHTML = '<div>Choose a file to analyze</div><small>JPG, PNG, MP4, AVI, MOV, MKV</small>';
+        return;
+      }
+      if (label) label.textContent = file.name;
+      const url = URL.createObjectURL(file);
+      const isImage = /^image\//.test(file.type);
+      const isVideo = /^video\//.test(file.type);
+      if (isImage) {
+        prev.innerHTML = '<img id="uploadPreviewImg" style="max-width:100%; max-height:180px; border-radius:10px;" alt="preview" />';
+        const img = document.getElementById('uploadPreviewImg');
+        img.onload = () => URL.revokeObjectURL(url);
+        img.src = url;
+      } else if (isVideo) {
+        prev.innerHTML = '<video id="uploadPreviewVid" style="max-width:100%; max-height:180px; border-radius:10px;" muted controls></video>';
+        const vid = document.getElementById('uploadPreviewVid');
+        vid.src = url;
+      } else {
+        prev.innerHTML = '<div>Unsupported file type</div>';
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="header">
+    <div class="wrap">
+      <div class="title">
+        <div class="badge"><span>🚑</span></div>
+        <div>
+          <h1>Priority Vehicle Annotation</h1>
+          <div class="subtitle">Upload image/video and view emergency-vehicle detections</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="grid">
+      <!-- LEFT: Upload & Analyze -->
+      <div class="panel">
+        <div class="inner">
+          <h2>Image / Video Upload & Analyze</h2>
+          <div class="drop" id="uploadPreview">
+            <div>Choose a file to analyze</div>
+            <small>JPG, PNG, MP4, AVI, MOV, MKV</small>
+          </div>
+          <form action="/analyze" method="post" enctype="multipart/form-data" style="margin-top:12px;">
+            <div class="centered-actions">
+              <div class="fileRow"><input type="file" name="file" accept="image/*,video/*" onchange="onFileChange(this)" required /></div>
+              <div class="hint"><strong>Hint:</strong> Large videos take time. Try a short clip first.</div>
+              <div><button class="btn" type="submit">🔎 Analyze</button></div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT: Annotated result only -->
+      <div class="panel">
+        <div class="inner">
+          <h2>Annotated Result</h2>
+          <div class="resultBox">
+            {% if result %}
+              {% if result.kind == 'image' %}
+                <img class="media" src="{{ result.output_url }}" alt="Annotated image"/>
+              {% elif result.kind == 'video' %}
+                <video class="media" controls src="{{ result.output_url }}"></video>
+              {% endif %}
+            {% else %}
+              <div class="placeholder" style="width:100%;">No analysis yet. Upload on the left and click Analyze.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+

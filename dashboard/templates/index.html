@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Priority Vehicle Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="bg-decor"></div>
+  <header class="app-header">
+    <div class="wrap">
+      <h1>Priority Vehicle Dashboard</h1>
+      <div class="meta">
+        <span id="lastUpdated" class="muted">Updating…</span>
+        <span id="statusBadge" class="badge">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- AMBULANCE PANEL -->
+    <h2 class="panel-title">Ambulance (AMB001)</h2>
+    <section class="metrics" id="amb-metrics">
+      <div id="amb-metricDistanceCard" class="metric"><span class="label">Distance</span><span id="amb-metricDistance" class="value">—</span></div>
+      <div id="amb-metricBearingCard" class="metric"><span class="label">Bearing</span><span id="amb-metricBearing" class="value">—</span></div>
+      <div id="amb-metricDirectionCard" class="metric"><span class="label">Signal Direction</span><span id="amb-metricDirection" class="value">—</span></div>
+      <div id="amb-metricVehicleCard" class="metric"><span class="label">Vehicle</span><span id="amb-metricVehicle" class="value">AMB001</span></div>
+    </section>
+    <section class="cards">
+      <article id="amb-serverCard" class="card"><div class="card-head"><h2>Server Last Event</h2><span id="amb-serverHealth" class="dot dot-warn" title="Server status"></span></div><pre id="amb-serverEvent">Loading…</pre></article>
+      <article id="amb-ctrlCard" class="card"><div class="card-head"><h2>Traffic Controller State</h2><span id="amb-ctrlHealth" class="dot dot-warn" title="Controller status"></span></div><pre id="amb-ctrlState">Loading…</pre></article>
+    </section>
+    <section class="chart"><div class="card" id="amb-trendCard"><div class="card-head"><h2>Distance Trend (m, last 50)</h2></div><canvas id="amb-sparkline" width="1000" height="160"></canvas></div></section>
+
+    <!-- FIRETRUCK PANEL -->
+    <h2 class="panel-title">FireTruck (FIRT001)</h2>
+    <section class="metrics" id="fir-metrics">
+      <div id="fir-metricDistanceCard" class="metric"><span class="label">Distance</span><span id="fir-metricDistance" class="value">—</span></div>
+      <div id="fir-metricBearingCard" class="metric"><span class="label">Bearing</span><span id="fir-metricBearing" class="value">—</span></div>
+      <div id="fir-metricDirectionCard" class="metric"><span class="label">Signal Direction</span><span id="fir-metricDirection" class="value">—</span></div>
+      <div id="fir-metricVehicleCard" class="metric"><span class="label">Vehicle</span><span id="fir-metricVehicle" class="value">FIRT001</span></div>
+    </section>
+    <section class="cards">
+      <article id="fir-serverCard" class="card"><div class="card-head"><h2>Server Last Event</h2><span id="fir-serverHealth" class="dot dot-warn" title="Server status"></span></div><pre id="fir-serverEvent">Loading…</pre></article>
+      <article id="fir-ctrlCard" class="card"><div class="card-head"><h2>Traffic Controller State</h2><span id="fir-ctrlHealth" class="dot dot-warn" title="Controller status"></span></div><pre id="fir-ctrlState">Loading…</pre></article>
+    </section>
+    <section class="chart"><div class="card" id="fir-trendCard"><div class="card-head"><h2>Distance Trend (m, last 50)</h2></div><canvas id="fir-sparkline" width="1000" height="160"></canvas></div></section>
+
+    <section class="tips"><p>Run the vehicle simulators to see live updates. This page refreshes every <strong>2s</strong>.</p></section>
+  </main>
+
+  <footer class="app-footer"><div class="wrap"><small>Priority Vehicle Demo • Local Only</small></div></footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

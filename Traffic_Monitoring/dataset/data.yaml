@@ -1,0 +1,6 @@
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 4
+names: ['ambulance_off', 'ambulance_on', 'firetruck_off', 'firetruck_on']
