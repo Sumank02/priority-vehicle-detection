@@ -23,13 +23,8 @@ Start-Process $py "-m dashboard.app"
 
 Start-Sleep -Seconds 2
 
-Write-Host "Starting Vehicle Simulator (AMB001)..." -ForegroundColor Green
-Start-Process $py "-m vehicle.vehicle_sim --repeat --interval 3 --jitter 0.5"
-
-Start-Sleep -Seconds 1
-
-Write-Host "Starting Firetruck Simulator (FIRT001)..." -ForegroundColor Green
-Start-Process $py "-m vehicle.firetruck_sim --repeat --interval 2.5 --jitter 0.4"
+Write-Host "Starting Scenario Simulator (alternating AMB/FIRT instances)..." -ForegroundColor Green
+Start-Process $py "-m vehicle.scenario_sim --min_duration 10 --max_duration 15 --idle 5 --tick 1.0"
 
 Start-Sleep -Seconds 2
 

@@ -32,7 +32,21 @@ def vehicle():
     print(f"[SERVER] {vid} @ {lat:.6f},{lon:.6f} speed={speed:.1f} -> {dist:.1f} m | bearing={bearing:.1f}° => {axis}")
 
     triggered = False
-    if dist < config.THRESHOLD_METERS:
+    # Suppress priority triggering for explicit idle updates (0 m, 0 speed)
+    is_idle_zero = (dist <= 1.0 and speed <= 1.0)
+    if is_idle_zero:
+        # Ensure controller returns to normal immediately at/after intersection
+        try:
+            r = requests.post(
+                getattr(config, "TRAFFIC_CONTROLLER_RELEASE_URL", config.TRAFFIC_CONTROLLER_URL),
+                json={},
+                timeout=5,
+            )
+            print("[SERVER] idle zero -> controller release:", r.status_code, r.text)
+        except Exception as e:
+            print("[SERVER] ERROR contacting controller (idle release):", e)
+            log_error(str(e), "SERVER_CONTROLLER_IDLE_RELEASE")
+    elif dist < config.THRESHOLD_METERS and not is_idle_zero:
         triggered = True
         try:
             if getattr(config, "HOLD_UNTIL_PASS", False):
