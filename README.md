@@ -82,6 +82,80 @@ python view_results.py
 
 ---
 
+## Blynk Mobile App Alerts (SOS-Style Full-Screen Alerts)
+
+The system sends **SOS-style full-screen alerts** to your Blynk mobile app with:
+- **Full-screen black background** with large white text (like emergency alerts)
+- **Structured data display**: Vehicle name, ID, direction, and distance
+- **Buzzer sounds** - automatic beep alerts
+- **LED/Blinker effects** - flashing visual indicators
+- **Color-coded themes** - Blue for Ambulance, Red for Firetruck
+
+### Quick Setup
+
+1. **Get Your Blynk Auth Token**
+   - Go to https://blynk.cloud/
+   - Create/login to your account
+   - Create a new template or device
+   - Copy your Auth Token
+   - Update `server/config.py` with your token:
+     ```python
+     BLYNK_AUTH_TOKEN = "YOUR_TOKEN_HERE"
+     ```
+
+2. **Follow the Detailed Setup Guide**
+   
+   **📖 See [BLYNK_SETUP_GUIDE.md](BLYNK_SETUP_GUIDE.md) for complete step-by-step instructions:**
+   - Which widgets to add (Label, Buzzer, LED, etc.)
+   - Exact datastream assignments (V0-V7)
+   - Widget configuration settings
+   - Layout arrangement for SOS-style alert
+   - Font sizes, colors, and positioning
+   - Troubleshooting tips
+
+### Virtual Pin Configuration
+
+The system uses these virtual pins (configured in `server/config.py`):
+
+| Pin | Purpose | Widget Type |
+|-----|---------|-------------|
+| **V0** | Alert Status (1=active, 0=inactive) | Button/Label |
+| **V1** | Vehicle Name ("Ambulance"/"Firetruck") | Label |
+| **V2** | Vehicle ID ("AMB001"/"FIRT001") | Label |
+| **V3** | Direction ("NS"/"EW") | Label |
+| **V4** | Distance (meters, e.g., "120.5") | Label |
+| **V5** | Buzzer (1=ON, 0=OFF) | Buzzer |
+| **V6** | LED/Blinker (255=ON, 0=OFF) | LED |
+| **V7** | Color Code (RRGGBB format) | Color Picker |
+
+### How It Works
+
+When a priority vehicle is detected:
+1. **Alert Status (V0)** = 1 (triggers full alert display)
+2. **Vehicle Name (V1)** = "Ambulance" or "Firetruck"
+3. **Vehicle ID (V2)** = "AMB001" or "FIRT001"
+4. **Direction (V3)** = "NS" or "EW"
+5. **Distance (V4)** = distance in meters (e.g., "120.5")
+6. **Buzzer (V5)** = 1 (triggers sound)
+7. **LED (V6)** = 255 (triggers fast blinking)
+8. **Color (V7)** = vehicle-specific color (blue/red)
+9. After 10 seconds, alert automatically resets
+
+### Alert Features
+
+- **SOS-style display**: Black background with large white text
+- **Full-screen responsive**: All text clearly visible
+- **Ambulance alerts**: Blue theme (#3B82F6) with "Ambulance" text
+- **Firetruck alerts**: Red theme (#EF4444) with "Firetruck" text
+- **Auto-reset**: Alert turns off after 10 seconds
+- **Structured data**: Each piece of information sent separately for better display
+
+### For Complete Setup Instructions
+
+**👉 Please see [BLYNK_SETUP_GUIDE.md](BLYNK_SETUP_GUIDE.md) for detailed step-by-step widget setup and configuration!**
+
+---
+
 ## Hardware Demo (LED Intersection Modal)
 
 If you want a physical LED intersection model driven by the controller:
