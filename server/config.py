@@ -46,3 +46,4 @@ BLYNK_VPIN_DISTANCE = "V4"       # Distance in meters (e.g., "120.5")
 BLYNK_VPIN_BUZZER = "V5"         # Buzzer widget (sound alerts) - value 1=ON, 0=OFF
 BLYNK_VPIN_LED = "V6"            # LED/Blinker widget (visual flashing) - value 255=ON, 0=OFF
 BLYNK_VPIN_COLOR = "V7"          # Color code (RRGGBB format, e.g., "3B82F6" for blue)
+BLINK_INTERVAL_MS = 600           # Blink interval for V6 during priority (milliseconds)

@@ -32,6 +32,61 @@ last_event = {
 last_events_by_vehicle = {}
 # Track which vehicles currently have active alerts (to avoid spamming)
 active_alerts = {}  # {vehicle_id: True/False}
+blinker_threads = {}  # {vehicle_id: Thread}
+blinker_stop_events = {}  # {vehicle_id: threading.Event}
+
+# -----------------------------------------------------------------------------
+# 💡 Helper: start_blynk_blinker(vehicle_id)
+# -----------------------------------------------------------------------------
+# Toggles V6 (LED) on/off at a fixed interval while the alert is active.
+# One thread per vehicle; ends automatically when active_alerts[vehicle_id] is False.
+# -----------------------------------------------------------------------------
+def start_blynk_blinker(vehicle_id: str):
+    # Avoid starting multiple blinkers for the same vehicle
+    if vehicle_id in blinker_threads and blinker_threads[vehicle_id] is not None:
+        return
+
+    import threading
+
+    def _blink_loop(stop_event):
+        base_params = f"token={config.BLYNK_AUTH_TOKEN}"
+        on_val = 255
+        off_val = 0
+        val = on_val
+        interval_s = getattr(config, 'BLINK_INTERVAL_MS', 600) / 1000.0
+        while active_alerts.get(vehicle_id, False) and not stop_event.is_set():
+            try:
+                url = f"{config.BLYNK_BASE_URL}/update?{base_params}&{config.BLYNK_VPIN_LED}={val}"
+                requests.get(url, timeout=2)
+            except Exception:
+                pass
+            # Toggle value for next iteration
+            val = off_val if val == on_val else on_val
+            # sleep in small slices to react fast to stop_event
+            slept = 0.0
+            step = min(0.1, interval_s)
+            while slept < interval_s and not stop_event.is_set() and active_alerts.get(vehicle_id, False):
+                time.sleep(step)
+                slept += step
+        # Ensure LED is off at exit
+        try:
+            url_off = f"{config.BLYNK_BASE_URL}/update?{base_params}&{config.BLYNK_VPIN_LED}=0"
+            requests.get(url_off, timeout=2)
+        except Exception:
+            pass
+        blinker_threads[vehicle_id] = None
+
+    # Create/replace stop event
+    stop_event = blinker_stop_events.get(vehicle_id)
+    if stop_event is None:
+        stop_event = threading.Event()
+        blinker_stop_events[vehicle_id] = stop_event
+    else:
+        stop_event.clear()
+
+    t = threading.Thread(target=_blink_loop, args=(stop_event,), daemon=True)
+    blinker_threads[vehicle_id] = t
+    t.start()
 
 # -----------------------------------------------------------------------------
 # 🔔 Function: send_blynk_alert()
@@ -105,8 +160,9 @@ def send_blynk_alert(vehicle_id, distance, direction=None):
         
         print(f"[BLYNK] SOS Alert sent → {name} ({vehicle_id}) | Direction: {direction} | Distance: {distance:.1f}m | {', '.join(responses)}")
         
-        # Mark this vehicle as having an active alert
+        # Mark this vehicle as having an active alert and start blinker
         active_alerts[vehicle_id] = True
+        start_blynk_blinker(vehicle_id)
         
     except Exception as e:
         print("[BLYNK] Error sending alert:", e)
@@ -120,6 +176,23 @@ def send_blynk_alert(vehicle_id, distance, direction=None):
 # -----------------------------------------------------------------------------
 def turn_off_blynk_alert(vehicle_id=None):
     try:
+        # First, mark inactive and stop blinker thread (if any), then force OFF
+        if vehicle_id:
+            active_alerts[vehicle_id] = False
+            stop_event = blinker_stop_events.get(vehicle_id)
+            t = blinker_threads.get(vehicle_id)
+            if stop_event is not None:
+                try:
+                    stop_event.set()
+                except Exception:
+                    pass
+            if t is not None:
+                try:
+                    # join briefly to let it exit and send final OFF
+                    t.join(timeout=1.5)
+                except Exception:
+                    pass
+
         base_params = f"token={config.BLYNK_AUTH_TOKEN}"
         
         # Turn off V0 (Alert Status), V5 (Buzzer), and V6 (LED)
@@ -141,7 +214,6 @@ def turn_off_blynk_alert(vehicle_id=None):
                 responses.append(f"✗ {widget_name}: {str(e)[:50]}")
         
         if vehicle_id:
-            active_alerts[vehicle_id] = False
             print(f"[BLYNK] Alert turned OFF → Vehicle: {vehicle_id} | {', '.join(responses)}")
         else:
             print(f"[BLYNK] Alert turned OFF → {', '.join(responses)}")
@@ -233,9 +305,8 @@ def vehicle():
     # 🕓 If vehicle has passed the intersection — release hold mode and turn off alerts
     # -----------------------------------------------------------------------------
     elif dist >= config.THRESHOLD_METERS:
-        # Vehicle is no longer in priority range - turn off alerts
-        if active_alerts.get(vid, False):
-            turn_off_blynk_alert(vid)  # Turn off V0, V5, V6
+        # Vehicle is no longer in priority range - turn off alerts (force OFF to be safe)
+        turn_off_blynk_alert(vid)  # Ensures V0, V5, V6 are OFF and marks inactive
         
         if getattr(config, "HOLD_UNTIL_PASS", False) and dist > getattr(config, "RELEASE_THRESHOLD_METERS", config.THRESHOLD_METERS + 40):
             try:
