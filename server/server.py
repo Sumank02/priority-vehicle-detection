@@ -13,7 +13,7 @@ import requests, time
 from urllib.parse import quote
 from . import config
 from .utils import haversine, initial_bearing, direction_from_bearing
-from .speaker import announce_firetruck_simple, announce_firetruck_detection, announce_in_thread
+from .speaker import announce_vehicle_simple, announce_vehicle_detection, announce_in_thread
 from results_logger import log_vehicle_event, log_error
 from flask_cors import CORS
 
@@ -257,11 +257,16 @@ def vehicle():
         if not active_alerts.get(vid, False):
             send_blynk_alert(vid, dist, axis)  # <-- Send SOS alert to Blynk App with direction
             
-            # Play speaker announcement for firetrucks
+            # Play speaker announcement for priority vehicles (firetrucks and ambulances)
+            is_ambulance = "AMB" in vid.upper()
             is_firetruck = "FIRT" in vid.upper() or ("AMB" not in vid.upper() and "FIRETRUCK" in vid.upper())
-            if is_firetruck:
+            
+            if is_ambulance:
                 # Play simple pre-recorded announcement on first detection
-                announce_in_thread(announce_firetruck_simple)
+                announce_in_thread(announce_vehicle_simple, "Ambulance")
+            elif is_firetruck:
+                # Play simple pre-recorded announcement on first detection
+                announce_in_thread(announce_vehicle_simple, "Firetruck")
         else:
             # Update distance and other info while alert is active
             # Keep V0, V5, V6 ON (they stay on from initial trigger)
@@ -286,11 +291,16 @@ def vehicle():
                     except:
                         pass
                 
-                # Play dynamic TTS announcement for firetrucks on updates
+                # Play dynamic TTS announcement for priority vehicles on updates
+                is_ambulance = "AMB" in vid.upper()
                 is_firetruck = "FIRT" in vid.upper() or ("AMB" not in vid.upper() and "FIRETRUCK" in vid.upper())
-                if is_firetruck:
+                
+                if is_ambulance:
                     # Play dynamic announcement with direction and distance
-                    announce_in_thread(announce_firetruck_detection, axis, dist)
+                    announce_in_thread(announce_vehicle_detection, "Ambulance", axis, dist)
+                elif is_firetruck:
+                    # Play dynamic announcement with direction and distance
+                    announce_in_thread(announce_vehicle_detection, "Firetruck", axis, dist)
             except:
                 pass
 

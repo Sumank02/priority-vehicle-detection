@@ -139,15 +139,18 @@ def _speak_with_pyttsx3(text):
         return False
 
 
-def play_prerecorded_alert():
+def play_prerecorded_alert(vehicle_type="firetruck"):
     """
-    Play pre-recorded sound: "Firetruck Detected. Make Space."
-    Looks for audio file in assets/audio/firetruck_make_space.mp3
+    Play pre-recorded sound: "{Vehicle} Detected. Make Space."
+    Looks for audio file in assets/audio/{vehicle_type}_make_space.mp3
+    
+    Args:
+        vehicle_type: "firetruck" or "ambulance"
     """
     # Get the project root directory (parent of server/)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
-    audio_file = os.path.join(project_root, "assets", "audio", "firetruck_make_space.mp3")
+    audio_file = os.path.join(project_root, "assets", "audio", f"{vehicle_type}_make_space.mp3")
     
     if os.path.exists(audio_file):
         print(f"[SPEAKER] Playing pre-recorded alert: {audio_file}")
@@ -158,14 +161,15 @@ def play_prerecorded_alert():
         return False
 
 
-def announce_firetruck_detection(direction, distance):
+def announce_vehicle_detection(vehicle_type, direction, distance):
     """
-    Announce firetruck detection with dynamic TTS:
-    "Firetruck Detected. Heading from {direction}. At {distance} meters."
+    Announce vehicle detection with dynamic TTS:
+    "{Vehicle} Detected. From {direction}. At {distance} meters."
     
     Uses gTTS as primary, pyttsx3 as fallback.
     
     Args:
+        vehicle_type: "Firetruck" or "Ambulance"
         direction: Direction string (e.g., "North-South", "NS", "East-West", "EW")
         distance: Distance in meters (float)
     """
@@ -184,7 +188,7 @@ def announce_firetruck_detection(direction, distance):
         distance_text = f"{distance_int} meters"
     
     # Construct announcement text
-    text = f"Firetruck Detected. Heading from {direction_text}. At {distance_text}."
+    text = f"{vehicle_type} Detected. From {direction_text}. At {distance_text}."
     
     print(f"[SPEAKER] Announcing: {text}")
     
@@ -204,17 +208,30 @@ def announce_firetruck_detection(direction, distance):
     return False
 
 
-def announce_firetruck_simple():
+def announce_firetruck_detection(direction, distance):
     """
-    Simple announcement: "Firetruck Detected. Make Space."
+    Announce firetruck detection (backward compatibility wrapper).
+    """
+    return announce_vehicle_detection("Firetruck", direction, distance)
+
+
+def announce_vehicle_simple(vehicle_type="Firetruck"):
+    """
+    Simple announcement: "{Vehicle} Detected. Make Space."
     First tries pre-recorded sound, then falls back to TTS.
+    
+    Args:
+        vehicle_type: "Firetruck" or "Ambulance"
     """
+    # Determine vehicle type for file lookup (lowercase)
+    vehicle_type_lower = vehicle_type.lower()
+    
     # Try pre-recorded sound first
-    if play_prerecorded_alert():
+    if play_prerecorded_alert(vehicle_type_lower):
         return True
     
     # Fallback to TTS
-    text = "Firetruck Detected. Make Space."
+    text = f"{vehicle_type} Detected. Make Space."
     print(f"[SPEAKER] Announcing: {text}")
     
     # Try gTTS first
@@ -231,6 +248,13 @@ def announce_firetruck_simple():
     
     print("[SPEAKER] ✗ No audio method available")
     return False
+
+
+def announce_firetruck_simple():
+    """
+    Simple firetruck announcement (backward compatibility wrapper).
+    """
+    return announce_vehicle_simple("Firetruck")
 
 
 def announce_in_thread(func, *args, **kwargs):
