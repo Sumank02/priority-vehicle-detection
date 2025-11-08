@@ -13,6 +13,7 @@ import requests, time
 from urllib.parse import quote
 from . import config
 from .utils import haversine, initial_bearing, direction_from_bearing
+from .speaker import announce_firetruck_simple, announce_firetruck_detection, announce_in_thread
 from results_logger import log_vehicle_event, log_error
 from flask_cors import CORS
 
@@ -255,6 +256,12 @@ def vehicle():
         # This prevents spamming the same alert repeatedly
         if not active_alerts.get(vid, False):
             send_blynk_alert(vid, dist, axis)  # <-- Send SOS alert to Blynk App with direction
+            
+            # Play speaker announcement for firetrucks
+            is_firetruck = "FIRT" in vid.upper() or ("AMB" not in vid.upper() and "FIRETRUCK" in vid.upper())
+            if is_firetruck:
+                # Play simple pre-recorded announcement on first detection
+                announce_in_thread(announce_firetruck_simple)
         else:
             # Update distance and other info while alert is active
             # Keep V0, V5, V6 ON (they stay on from initial trigger)
@@ -278,6 +285,12 @@ def vehicle():
                         requests.get(url, timeout=2)
                     except:
                         pass
+                
+                # Play dynamic TTS announcement for firetrucks on updates
+                is_firetruck = "FIRT" in vid.upper() or ("AMB" not in vid.upper() and "FIRETRUCK" in vid.upper())
+                if is_firetruck:
+                    # Play dynamic announcement with direction and distance
+                    announce_in_thread(announce_firetruck_detection, axis, dist)
             except:
                 pass
 

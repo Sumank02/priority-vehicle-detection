@@ -14,3 +14,8 @@ RPi.GPIO; sys_platform == 'linux'
 
 # For serial comms with GSM/GPS (only needed when SIMULATE=false in gps_gsm_client.py)
 pyserial
+
+# Text-to-Speech for speaker announcements
+gtts
+pygame
+pyttsx3
