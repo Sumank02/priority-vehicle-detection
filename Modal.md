@@ -76,6 +76,7 @@ python -m dashboard.app
 python -m vehicle.vehicle_sim --repeat --interval 3 --jitter 0.5
 python -m vehicle.firetruck_sim --repeat --interval 2.5 --jitter 0.4
 ```
+*(Instead of steps 2–4 you can run `powershell -ExecutionPolicy Bypass -File .\run_all_led.ps1` from your workstation to start the server, dashboard, and scenario simulator together.)*
 
 ### Notes
 - With hold enabled, the selected axis stays green until distance exceeds `RELEASE_THRESHOLD_METERS`.

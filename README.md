@@ -163,6 +163,7 @@ If you want a physical LED intersection model driven by the controller:
 - See `Modal.md` for wiring, configuration, and run steps.
 - When running the controller on a Raspberry Pi and the server on another machine, update `server/config.py` to point `TRAFFIC_CONTROLLER_URL`, `TRAFFIC_CONTROLLER_HOLD_URL`, and `TRAFFIC_CONTROLLER_RELEASE_URL` to the Pi's IP (not `127.0.0.1`).
 - Optional: set `HOLD_UNTIL_PASS = True` in `server/config.py` to keep a lane green until the vehicle passes; otherwise the default duration-based behavior remains.
+- Use `run_all_led.ps1` on your workstation to start server, dashboard, and simulator while the Pi runs the controller in hardware mode (`SIMULATE=false`).
 
 ---
 
